@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">RMA_project</string>
+    <string name="email">E-Mail</string>
+    <string name="username">Benutzername</string>
+    <string name="password">Passwort</string>
+    <string name="login">Anmelden</string>
+    <string name="logout">Abmelden</string>
+    <string name="sign_up">Registrieren</string>
+    <string name="homepage">Startseite</string>
+    <string name="my_meetings">Meine Meetings</string>
+    <string name="joined_meetings">Beigetretene Meetings</string>
+    <string name="menu">Menü</string>
+    <string name="add_meeting">Meeting hinzufügen</string>
+    <string name="no_meetings">Keine Meetings :(</string>
+    <string name="delete">Löschen</string>
+    <string name="leave">Verlassen</string>
+    <string name="join">Beitreten</string>
+    <string name="meeting_is_full">Das Meeting ist voll.</string>
+    <string name="joined">Beigetreten</string>
+    <string name="when">Wann</string>
+    <string name="owner">Besitzer</string>
+    <string name="title">Titel</string>
+    <string name="example_title">z. B. Kaffee mit Alex</string>
+    <string name="meeting_date_time">Datum &amp; Uhrzeit des Meetings</string>
+    <string name="description">Beschreibung</string>
+    <string name="example_description">Was möchtest du besprechen?</string>
+    <string name="january">Januar</string>
+    <string name="february">Februar</string>
+    <string name="march">März</string>
+    <string name="april">April</string>
+    <string name="may">Mai</string>
+    <string name="june">Juni</string>
+    <string name="july">Juli</string>
+    <string name="august">August</string>
+    <string name="september">September</string>
+    <string name="october">Oktober</string>
+    <string name="november">November</string>
+    <string name="december">Dezember</string>
+    <string name="select_meeting_date_time">Datum &amp; Uhrzeit des Meetings auswählen</string>
+    <string name="date">Datum</string>
+    <string name="time">Uhrzeit</string>
+    <string name="cancel">Abbrechen</string>
+    <string name="ok">OK</string>
+</resources>

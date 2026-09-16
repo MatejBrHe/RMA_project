@@ -1,28 +1,29 @@
 package com.example.rma_project.view
 
-import android.content.res.Resources
 import android.net.Uri
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -34,33 +35,50 @@ import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun ProfileScreen(auth: FirebaseAuth, navController: NavController, viewModel: LoginViewModel = viewModel()) {
+    if (auth.currentUser == null) {
+        navController.navigate("login")
+    }
+
     val user = auth.currentUser
 
-    Column() {
-        Spacer(modifier = Modifier.height(40.dp))
-        ProfilePicture(user?.photoUrl)
-        Spacer(modifier = Modifier.height(40.dp))
-        Row(
-            modifier = Modifier.padding(start = 30.dp)
-        ) {
-            Text(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, text = "E-mail: ")
-            user?.email?.let { Text(it) }
-        }
-        Spacer(modifier = Modifier.weight(1f))
-        Row() {
-            Spacer(modifier = Modifier.weight(1f))
+    Scaffold(
+        bottomBar = {
             Button(
-                modifier = Modifier.width(150.dp),
                 onClick = {
                     viewModel.logoutUser(auth = auth)
                     navController.navigate("login")
-                }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .height(52.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
             ) {
-                Text(text = "Logout")
+                Text(text = stringResource(R.string.logout), color = Color.White)
+            }
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier.padding(paddingValues)
+        ) {
+            Spacer(modifier = Modifier.height(40.dp))
+            ProfilePicture(user?.photoUrl)
+            Spacer(modifier = Modifier.height(40.dp))
+            Row(
+                modifier = Modifier.padding(start = 30.dp)
+            ) {
+                Text(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.tertiary, text = "${stringResource(R.string.email)}: ")
+                user?.email?.let { Text(it, color = MaterialTheme.colorScheme.primary) }
+            }
+            Row(
+                modifier = Modifier.padding(start = 30.dp)
+            ) {
+                Text(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.tertiary, text = "${stringResource(R.string.username)}: ")
+                user?.displayName?.let { Text(it, color = MaterialTheme.colorScheme.primary) }
             }
             Spacer(modifier = Modifier.weight(1f))
         }
-        Spacer(modifier = Modifier.height(40.dp))
+
     }
 }
 
@@ -70,18 +88,10 @@ fun ProfilePicture(url: Uri?){
         Spacer(modifier = Modifier.weight(1f))
         if (url == null) {
             Box() {
-                Canvas(
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(shape = RoundedCornerShape(100.dp))
-                ) {
-                    drawRect(
-                        color = Color.LightGray
-                    )
-                }
-                Image(
-                    painter = painterResource(id = R.drawable.ic_user),
+                Icon(
+                    imageVector = Icons.Default.AccountCircle,
                     contentDescription = "User image",
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
                         .height(100.dp)
                         .width(100.dp)
@@ -94,6 +104,8 @@ fun ProfilePicture(url: Uri?){
                 modifier = Modifier
                     .height(100.dp)
                     .width(100.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop
             )
         }
         Spacer(modifier = Modifier.weight(1f))

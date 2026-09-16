@@ -6,10 +6,13 @@ import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.UserProfileChangeRequest
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 class LoginViewModel : ViewModel() {
+    private val db = FirebaseFirestore.getInstance()
     private val _user = MutableStateFlow<FirebaseUser?>(null)
     val user: StateFlow<FirebaseUser?> = _user
 
@@ -32,15 +35,29 @@ class LoginViewModel : ViewModel() {
         auth.signOut()
     }
 
-    fun signUpUser(auth: FirebaseAuth, email: String, password: String, navController: NavController) {
+    fun signUpUser(auth: FirebaseAuth, email: String, username: String, password: String, navController: NavController) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
+                    val profileUpdate = UserProfileChangeRequest.Builder().setDisplayName(username).build()
+                    auth.currentUser?.updateProfile(profileUpdate)
                     Log.d(TAG, "createUserWithEmail:success")
                     _user.value = auth.currentUser
+
+                    val newUser = hashMapOf(
+                        "name" to username
+                    )
+
+                    db.collection("Users")
+                        .document(auth.currentUser?.uid.toString())
+                        .set(newUser)
+                        .addOnFailureListener {exception ->
+                            Log.e("FIRESTORE", exception.message, exception)
+                        }
+
                     navController.navigate("home")
                 } else {
-                    Log.w(TAG, "createUserWithEmail:failure", task.exception)
+                    Log.e(TAG, "createUserWithEmail:failure", task.exception)
                     _user.value = null
                     navController.navigate("signUp")
                 }

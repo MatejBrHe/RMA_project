@@ -3,7 +3,10 @@ package com.example.rma_project.view
 import android.os.Build
 import android.widget.NumberPicker
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.DateRange
@@ -18,21 +21,20 @@ import androidx.navigation.NavController
 import com.example.rma_project.viewModel.MeetingViewModel
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.ZoneId
-import java.util.Calendar
 import java.util.Locale
-import androidx.compose.material3.DatePicker
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
-import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Surface
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
-import java.time.Instant
+import com.example.rma_project.R
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
@@ -43,8 +45,13 @@ import java.time.format.DateTimeFormatter
 fun AddScreen(
     screenTitle: String,
     navController: NavController,
-    viewModel: MeetingViewModel = viewModel()
+    viewModel: MeetingViewModel = viewModel(),
+    auth: FirebaseAuth
 ) {
+    if (auth.currentUser == null) {
+        navController.navigate("login")
+    }
+
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
@@ -89,89 +96,108 @@ fun AddScreen(
     )
 
     ModalNavigationDrawer(
+        modifier = Modifier.background(MaterialTheme.colorScheme.surface),
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet(
                 modifier = Modifier.width(300.dp)
             ) {
-                Text("Menu", modifier = Modifier.padding(16.dp))
-                HorizontalDivider()
-                if (screenTitle != "Add meeting") {
-                    NavigationDrawerItem(
-                        label = { Text(text = "Add meeting") },
-                        selected = false,
-                        onClick = { navController.navigate("addNew") }
-                    )
-                }
-                if (screenTitle != "Homepage") {
-                    NavigationDrawerItem(
-                        label = { Text(text = "Homepage") },
-                        selected = false,
-                        onClick = { navController.navigate("home") }
-                    )
-                }
-                if (screenTitle != "My coffee meetings") {
-                    NavigationDrawerItem(
-                        label = { Text(text = "My coffee meetings") },
-                        selected = false,
-                        onClick = { navController.navigate("myMeetings") }
-                    )
-                }
-                if (screenTitle != "Joined meetings") {
-                    NavigationDrawerItem(
-                        label = { Text(text = "Joined meetings") },
-                        selected = false,
-                        onClick = { navController.navigate("joinedMeetings") }
-                    )
-                }
+                Text(stringResource(R.string.menu), modifier = Modifier.padding(16.dp), color = MaterialTheme.colorScheme.primary)
+                HorizontalDivider(color = MaterialTheme.colorScheme.primary)
+                NavigationDrawerItem(
+                    label = { Text(text = stringResource(R.string.homepage), color = MaterialTheme.colorScheme.primary) },
+                    selected = false,
+                    onClick = {
+                        navController.navigate("home")
+                        scope.launch {
+                            drawerState.close()
+                        }
+                    }
+                )
+                NavigationDrawerItem(
+                    label = { Text(text = stringResource(R.string.my_meetings), color = MaterialTheme.colorScheme.primary) },
+                    selected = false,
+                    onClick = {
+                        navController.navigate("myMeetings")
+                        scope.launch {
+                            drawerState.close()
+                        }
+                    }
+                )
+                NavigationDrawerItem(
+                    label = { Text(text = stringResource(R.string.joined_meetings), color = MaterialTheme.colorScheme.primary) },
+                    selected = false,
+                    onClick = {
+                        navController.navigate("joinedMeetings")
+                        scope.launch {
+                            drawerState.close()
+                        }
+                    }
+                )
             }
         }
     ) {
-        Column(
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxSize()
-        ) {
-            Topbar(title = screenTitle, scope = scope, drawerState = drawerState, onClick = { navController.navigate("profile") })
-
-            MeetingTitleInput(
-                title = title,
-                onTitleChange = {
-                    title = it
+        Scaffold(
+            topBar = {
+                Topbar(
+                    title = screenTitle,
+                    scope = scope,
+                    drawerState = drawerState,
+                    onClick = { navController.navigate("profile") }
+                )
+            },
+            bottomBar = {
+                Button(
+                    onClick = {
+                        viewModel.addMeeting(
+                            title = title,
+                            time = selectedDateTime,
+                            description = description,
+                            auth = auth
+                        )
+                        navController.navigate("myMeetings")
+                    },
+                    enabled = title.isNotBlank(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .height(52.dp),
+                    colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.tertiary,
+                            disabledContentColor = MaterialTheme.colorScheme.surface
+                        ),
+                ) {
+                    Text(stringResource(R.string.add_meeting), color = Color.White)
                 }
-            )
-
-            MeetingDateTimeInput(
-                dateTime = formattedDateTime,
-                onClick = {
-                    showDateTimePicker = true
-                }
-            )
-
-            MeetingDescriptionInput(
-                description = description,
-                onDescriptionChange = {
-                    description = it
-                }
-            )
-
-            Button(
-                onClick = {
-                    viewModel.addMeeting(
-                        title = title,
-                        time = selectedDateTime,
-                        description = description
-                    )
-
-                    navController.navigate("home")
-                },
-                enabled = title.isNotBlank(),
+            }
+        ) { paddingValues ->
+            Column(
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .height(52.dp)
+                    .fillMaxSize()
+                    .padding(paddingValues)
             ) {
-                Text("Add meeting")
+                MeetingTitleInput(
+                    title = title,
+                    onTitleChange = {
+                        title = it
+                    }
+                )
+
+                MeetingDateTimeInput(
+                    dateTime = formattedDateTime,
+                    onClick = {
+                        showDateTimePicker = true
+                    }
+                )
+
+                MeetingDescriptionInput(
+                    description = description,
+                    onDescriptionChange = {
+                        description = it
+                    }
+                )
             }
         }
     }
@@ -205,13 +231,17 @@ fun MeetingTitleInput(
         value = title,
         onValueChange = onTitleChange,
         label = {
-            Text("Title")
+            Text(stringResource(R.string.title), color = MaterialTheme.colorScheme.secondary)
         },
         placeholder = {
-            Text("e.g. Coffee with Alex")
+            Text(stringResource(R.string.example_title), color = MaterialTheme.colorScheme.secondary)
         },
         singleLine = true,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth().padding(20.dp),
+        colors = TextFieldDefaults.colors(
+            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+            focusedContainerColor = MaterialTheme.colorScheme.surface
+        )
     )
 }
 
@@ -222,7 +252,10 @@ fun MeetingDateTimeInput(
 ) {
     OutlinedCard(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(20.dp)
+            .border(width = 1.dp, color = MaterialTheme.colorScheme.secondary, shape = RoundedCornerShape(10.dp))
     ) {
         Row(
             modifier = Modifier
@@ -244,7 +277,7 @@ fun MeetingDateTimeInput(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = "Meeting date & time",
+                    text = stringResource(R.string.meeting_date_time),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -273,23 +306,29 @@ fun MeetingDescriptionInput(
         value = description,
         onValueChange = onDescriptionChange,
         label = {
-            Text("Description")
+            Text(stringResource(R.string.description), color = MaterialTheme.colorScheme.secondary)
         },
         placeholder = {
-            Text("What would you like to discuss?")
+            Text(stringResource(R.string.example_description), color = MaterialTheme.colorScheme.secondary)
         },
         minLines = 5,
         maxLines = 8,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth().padding(20.dp),
+        colors = TextFieldDefaults.colors(
+            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+            focusedContainerColor = MaterialTheme.colorScheme.surface
+        )
     )
 }
 
+@RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun NumberSpinner(
     value: Int,
     range: IntRange,
     onValueChange: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    textColor: Color = Color.White
 ) {
     AndroidView(
         modifier = modifier.height(100.dp),
@@ -299,6 +338,8 @@ fun NumberSpinner(
                 minValue = range.first
                 maxValue = range.last
                 this.value = value
+
+                setTextColor(textColor.toArgb())
 
                 setOnValueChangedListener { _, _, newValue ->
                     onValueChange(newValue)
@@ -316,12 +357,14 @@ fun NumberSpinner(
     )
 }
 
+@RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun MonthSpinner(
     value: Int,
     months: List<String>,
     onValueChange: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    textColor: Color = Color.White
 ) {
     AndroidView(
         modifier = modifier.height(100.dp),
@@ -332,6 +375,8 @@ fun MonthSpinner(
                 maxValue = 12
                 displayedValues = months.toTypedArray()
                 this.value = value
+
+                setTextColor(textColor.toArgb())
 
                 setOnValueChangedListener { _, _, newValue ->
                     onValueChange(newValue)
@@ -361,18 +406,18 @@ fun SpinnerDatePicker(
     onDateSelected: (year: Int, month: Int, day: Int) -> Unit
 ) {
     val months = listOf(
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December"
+        stringResource(R.string.january),
+        stringResource(R.string.february),
+        stringResource(R.string.march),
+        stringResource(R.string.april),
+        stringResource(R.string.may),
+        stringResource(R.string.june),
+        stringResource(R.string.july),
+        stringResource(R.string.august),
+        stringResource(R.string.september),
+        stringResource(R.string.october),
+        stringResource(R.string.november),
+        stringResource(R.string.december)
     )
 
     val daysInMonth = YearMonth
@@ -394,7 +439,8 @@ fun SpinnerDatePicker(
             onValueChange = { newDay ->
                 onDateSelected(year, month, newDay)
             },
-            modifier = Modifier.width(70.dp)
+            modifier = Modifier.width(70.dp),
+            textColor = MaterialTheme.colorScheme.primary
         )
         MonthSpinner(
             value = month,
@@ -412,7 +458,8 @@ fun SpinnerDatePicker(
                     newDay
                 )
             },
-            modifier = Modifier.width(130.dp)
+            modifier = Modifier.width(130.dp),
+            textColor = MaterialTheme.colorScheme.primary
         )
         NumberSpinner(
             value = year,
@@ -428,7 +475,8 @@ fun SpinnerDatePicker(
                     newDay
                 )
             },
-            modifier = Modifier.width(80.dp)
+            modifier = Modifier.width(80.dp),
+            textColor = MaterialTheme.colorScheme.primary
         )
     }
 }
@@ -480,8 +528,9 @@ fun MeetingDateTimePicker(
             ) {
 
                 Text(
-                    text = "Select meeting date & time",
-                    style = MaterialTheme.typography.titleLarge
+                    text = stringResource(R.string.select_meeting_date_time),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.primary
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -493,7 +542,7 @@ fun MeetingDateTimePicker(
                         selected = selectedTab == 0,
                         onClick = { selectedTab = 0 },
                         text = {
-                            Text("Date")
+                            Text(stringResource(R.string.date), color = MaterialTheme.colorScheme.primary)
                         }
                     )
 
@@ -501,7 +550,7 @@ fun MeetingDateTimePicker(
                         selected = selectedTab == 1,
                         onClick = { selectedTab = 1 },
                         text = {
-                            Text("Time")
+                            Text(stringResource(R.string.time), color = MaterialTheme.colorScheme.primary)
                         }
                     )
                 }
@@ -513,7 +562,6 @@ fun MeetingDateTimePicker(
                         month = selectedMonth,
                         day = selectedDay,
                         onDateSelected = { year, month, day ->
-
                             selectedYear = year
                             selectedMonth = month
                             selectedDay = day
@@ -521,7 +569,6 @@ fun MeetingDateTimePicker(
                     )
 
                 } else {
-
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -542,12 +589,11 @@ fun MeetingDateTimePicker(
                     TextButton(
                         onClick = onDismiss
                     ) {
-                        Text("Cancel")
+                        Text(stringResource(R.string.cancel), color = MaterialTheme.colorScheme.primary)
                     }
 
                     TextButton(
                         onClick = {
-
                             val selectedDateTime = LocalDateTime.of(
                                 selectedYear,
                                 selectedMonth,
@@ -555,11 +601,10 @@ fun MeetingDateTimePicker(
                                 timePickerState.hour,
                                 timePickerState.minute
                             )
-
                             onDateTimeSelected(selectedDateTime)
                         }
                     ) {
-                        Text("OK")
+                        Text(stringResource(R.string.ok), color = MaterialTheme.colorScheme.primary)
                     }
                 }
             }

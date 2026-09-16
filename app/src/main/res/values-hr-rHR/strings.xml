@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">RMA_project</string>
+    <string name="email">E-mail</string>
+    <string name="username">Korisničko ime</string>
+    <string name="password">Lozinka</string>
+    <string name="login">Prijava</string>
+    <string name="logout">Odjava</string>
+    <string name="sign_up">Registracija</string>
+    <string name="homepage">Početna stranica</string>
+    <string name="my_meetings">Moji sastanci</string>
+    <string name="joined_meetings">Pridruženi sastanci</string>
+    <string name="menu">Izbornik</string>
+    <string name="add_meeting">Dodaj sastanak</string>
+    <string name="no_meetings">Nema sastanaka :(</string>
+    <string name="delete">Obriši</string>
+    <string name="leave">Napusti</string>
+    <string name="join">Pridruži se</string>
+    <string name="meeting_is_full">Sastanak je popunjen.</string>
+    <string name="joined">Pridruženo</string>
+    <string name="when">Kada</string>
+    <string name="owner">Vlasnik</string>
+    <string name="title">Naslov</string>
+    <string name="example_title">npr. Kava s Alexom</string>
+    <string name="meeting_date_time">Datum i vrijeme sastanka</string>
+    <string name="description">Opis</string>
+    <string name="example_description">O čemu biste željeli razgovarati?</string>
+    <string name="january">Siječanj</string>
+    <string name="february">Veljača</string>
+    <string name="march">Ožujak</string>
+    <string name="april">Travanj</string>
+    <string name="may">Svibanj</string>
+    <string name="june">Lipanj</string>
+    <string name="july">Srpanj</string>
+    <string name="august">Kolovoz</string>
+    <string name="september">Rujan</string>
+    <string name="october">Listopad</string>
+    <string name="november">Studeni</string>
+    <string name="december">Prosinac</string>
+    <string name="select_meeting_date_time">Odaberite datum i vrijeme sastanka</string>
+    <string name="date">Datum</string>
+    <string name="time">Vrijeme</string>
+    <string name="cancel">Odustani</string>
+    <string name="ok">U redu</string>
+</resources>
